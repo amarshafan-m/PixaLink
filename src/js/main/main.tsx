@@ -1457,7 +1457,7 @@ export const App = () => {
 
       <div className="topbar">
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <img src={pixaLogo} alt="PixaLink Logo" style={{ width: "24px", height: "24px", borderRadius: "6px" }} />
+          <img src={pixaLogo} alt="PixaLink Logo" style={{ width: "36px", height: "36px", borderRadius: "8px" }} />
           <div>
             <h1>PixaLink</h1>
             <p>Multi-Provider Stock Importer</p>
