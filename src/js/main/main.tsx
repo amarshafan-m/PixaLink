@@ -572,6 +572,20 @@ export const App = () => {
         const file = fs.createWriteStream(tempZipPath);
         // Helper to follow redirects (common for GitHub releases)
         const getWithRedirects = (urlStr: string) => {
+          // Security: Validate domain to prevent MITM/Spoofed URLs
+          let parsedUrl;
+          try {
+            parsedUrl = new URL(urlStr);
+          } catch (e) {
+            reject(new Error("Invalid update URL."));
+            return;
+          }
+          const validDomains = ["github.com", "raw.githubusercontent.com", "api.github.com", "objects.githubusercontent.com"];
+          if (!validDomains.some(domain => parsedUrl.hostname === domain || parsedUrl.hostname.endsWith("." + domain))) {
+            reject(new Error(`Security Error: Untrusted update domain (${parsedUrl.hostname}).`));
+            return;
+          }
+
           const client = urlStr.startsWith("https") ? https : http;
           client.get(urlStr, (response: any) => {
             if (response.statusCode && response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) {
@@ -613,6 +627,16 @@ export const App = () => {
       await new Promise(r => setTimeout(r, 100)); 
       
       const zip = new AdmZip(tempZipPath);
+      
+      // Security: Prevent Zip Slip path traversal vulnerabilities
+      const zipEntries = zip.getEntries();
+      for (const entry of zipEntries) {
+        if (entry.entryName.includes("..") || entry.entryName.startsWith("/")) {
+          fs.unlinkSync(tempZipPath);
+          throw new Error("Security Error: Malicious ZIP file detected (Path Traversal attempt). Update aborted.");
+        }
+      }
+
       zip.extractAllTo(extractDir, true);
 
       // 3. Overwrite current extension files
