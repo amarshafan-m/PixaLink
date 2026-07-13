@@ -625,6 +625,11 @@ export const App = () => {
           extDir = extDir.substring(1);
         }
       }
+
+      // If the extension folder is a symlink (e.g. in dev mode), resolve it to the real directory
+      if (fs.existsSync(extDir)) {
+        extDir = fs.realpathSync(extDir);
+      }
       
       // Determine if the zip extracts to a single parent wrapper directory, or directly the extension files
       const extractedItems = fs.readdirSync(extractDir);
