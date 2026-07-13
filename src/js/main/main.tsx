@@ -493,9 +493,12 @@ export const App = () => {
 
   const checkForUpdates = async () => {
     // Mocked to automatically show you a fake "v1.1.0" update when you open the panel
-    setTimeout(() => {
-      setUpdateAvailable({ version: "1.1.0", url: "https://example.com/update.zxp" });
-    }, 1000);
+    const currentMockVersion = localStorage.getItem("mock_version") || "1.0.0";
+    if (currentMockVersion !== "1.1.0") {
+      setTimeout(() => {
+        setUpdateAvailable({ version: "1.1.0", url: "https://example.com/update.zxp" });
+      }, 1000);
+    }
   };
 
   const GUMROAD_PRODUCT_ID = "4BLlrpcgxi5Kc8luOtwemw=="; // Note: If API gives an error, replace this with the long internal ID from the Gumroad edit page URL.
@@ -551,6 +554,7 @@ export const App = () => {
       }
       showError("Update Ready", "The update has been downloaded. Please restart Premiere Pro to apply the new version.");
       setUpdateAvailable(null);
+      localStorage.setItem("mock_version", "1.1.0");
     } catch (e) {
       showError("Update Failed", "Could not download the update.");
     } finally {
