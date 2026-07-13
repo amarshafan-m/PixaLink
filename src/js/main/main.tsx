@@ -496,7 +496,7 @@ export const App = () => {
 
   const checkForUpdates = async () => {
     try {
-      const res = await fetch(UPDATE_CHECK_URL, { cache: "no-store" });
+      const res = await fetch(`${UPDATE_CHECK_URL}?t=${new Date().getTime()}`, { cache: "no-store" });
       if (!res.ok) return;
       const data = await res.json();
       
