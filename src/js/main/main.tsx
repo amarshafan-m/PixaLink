@@ -898,7 +898,7 @@ export const App = () => {
       url: preview,
       ext: ".mp3",
       provider: "freesound",
-      category: type === "sfx" ? "sfx" : "music"
+      category: type === "music" ? "music" : "sfx"
     };
   };
 
@@ -1418,7 +1418,8 @@ export const App = () => {
                         : previewAsset.category === "gif" ? "GIF"
                         : previewAsset.category === "vector" ? "Vector"
                         : previewAsset.category === "illustration" ? "Illustration"
-                        : previewAsset.provider === "freesound" ? "Audio"
+                        : previewAsset.category === "music" ? "Music"
+                        : previewAsset.category === "sfx" ? "SFX"
                         : previewAsset.category}
                     </span>
                   )}
@@ -1542,12 +1543,13 @@ export const App = () => {
           const isPlaying = playingId === hit.id;
           const isVideo = hit.category === "video";
           const isHovered = hoveredVideoId === hit.id;
-          const typeLabel = isAudio ? "Audio"
-            : hit.category === "video" ? "Video"
+          const typeLabel = hit.category === "video" ? "Video"
             : hit.category === "photo" ? "Photo"
             : hit.category === "gif" ? "GIF"
             : hit.category === "vector" ? "Vector"
             : hit.category === "illustration" ? "Illustration"
+            : hit.category === "music" ? "Music"
+            : hit.category === "sfx" ? "SFX"
             : hit.category;
 
           return (
