@@ -14,6 +14,13 @@ const normalizeCepPath = (value: string): string => {
   return cleaned;
 };
 
+const formatDurationSeconds = (seconds: number): string => {
+  if (!seconds || isNaN(seconds)) return "";
+  const m = Math.floor(seconds / 60);
+  const s = Math.floor(seconds % 60);
+  return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+};
+
 type Provider = "pixabay" | "pexels" | "freesound" | "giphy" | "coverr";
 type Category = "all" | "photo" | "illustration" | "vector" | "video" | "music" | "sfx" | "gif";
 
@@ -26,6 +33,7 @@ interface NormalizedAsset {
   ext: string;
   provider: Provider;
   category: Category;
+  duration?: string;
 }
 
 const licenseTerms: { [key in Provider]: { name: string; summary: string; url: string } } = {
@@ -186,6 +194,27 @@ const MusicIcon = () => (
     <path d="M9 18V5l12-2v13"></path>
     <circle cx="6" cy="18" r="3"></circle>
     <circle cx="18" cy="16" r="3"></circle>
+  </svg>
+);
+
+const VideoIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect>
+    <line x1="7" y1="2" x2="7" y2="22"></line>
+    <line x1="17" y1="2" x2="17" y2="22"></line>
+    <line x1="2" y1="12" x2="22" y2="12"></line>
+    <line x1="2" y1="7" x2="7" y2="7"></line>
+    <line x1="2" y1="17" x2="7" y2="17"></line>
+    <line x1="17" y1="17" x2="22" y2="17"></line>
+    <line x1="17" y1="7" x2="22" y2="7"></line>
+  </svg>
+);
+
+const ImageIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+    <polyline points="21 15 16 10 5 21"></polyline>
   </svg>
 );
 
@@ -916,7 +945,8 @@ export const App = () => {
         url: video ? video.url : "",
         ext: ".mp4",
         provider: "pixabay",
-        category: assetCategory
+        category: assetCategory,
+        duration: hit.duration ? formatDurationSeconds(hit.duration) : undefined
       };
     }
 
@@ -972,7 +1002,8 @@ export const App = () => {
       url: file ? file.link : "",
       ext: ".mp4",
       provider: "pexels",
-      category: "video"
+      category: "video",
+      duration: hit.duration ? formatDurationSeconds(hit.duration) : undefined
     };
   };
 
@@ -986,7 +1017,8 @@ export const App = () => {
       url: preview,
       ext: ".mp3",
       provider: "freesound",
-      category: "sfx"
+      category: "sfx",
+      duration: hit.duration ? formatDurationSeconds(hit.duration) : undefined
     };
   };
 
@@ -1679,7 +1711,10 @@ export const App = () => {
                 className={`filter ${type === category.id ? "active" : ""}`}
                 onClick={() => setType(category.id)}
               >
-                {category.label}
+                {category.id === "video" ? <VideoIcon /> : 
+                 category.id === "music" || category.id === "sfx" ? <MusicIcon /> : 
+                 category.id === "photo" || category.id === "illustration" || category.id === "vector" || category.id === "gif" ? <ImageIcon /> : null}
+                <span>{category.label}</span>
               </button>
             );
           })}
@@ -1790,31 +1825,24 @@ export const App = () => {
                   <div className="thumb-placeholder">No Preview</div>
                 )}
 
-                {/* Animated Circular Download Preloader */}
-                {isDownloading && (
-                  <div className="downloading-overlay">
-                    <div className="spinner"></div>
-                    <span className="progress-percent">
-                      {downloadProgress[hit.id] !== undefined ? `${downloadProgress[hit.id]}%` : "0%"}
-                    </span>
+                {/* Type Icon Overlay — bottom left */}
+                <div className="asset-type-icon-overlay">
+                  {isVideo ? <VideoIcon /> : isAudio ? <MusicIcon /> : <ImageIcon />}
+                </div>
+
+                {/* Duration Overlay — bottom right */}
+                {hit.duration && (
+                  <div className="asset-duration-overlay">
+                    {hit.duration}
                   </div>
                 )}
-
-                {/* Type Badge — top left */}
-                {type === "all" && <span className={`type-badge type-${hit.category}`}>{typeLabel}</span>}
-
-                {/* Source Badge — bottom right */}
-                <span className={`provider-badge ${hit.provider}`}>
-                  {hit.provider === "pixabay"
-                    ? "Pixabay"
-                    : hit.provider === "pexels"
-                    ? "Pexels"
-                    : hit.provider === "freesound"
-                    ? "Freesound"
-                    : hit.provider === "giphy"
-                    ? "Giphy"
-                    : "Coverr"}
-                </span>
+                
+                {/* Play Button Overlay for Video (Concept Art Match) */}
+                {isVideo && !isHovered && (
+                  <div className="glass-play-btn-overlay">
+                    <PlayIcon />
+                  </div>
+                )}
               </div>
               <div className="asset-info">
                 <h2>{hit.title}</h2>
@@ -1860,6 +1888,25 @@ export const App = () => {
           );
         })}
       </div>
+
+      {/* Global Import Progress (Concept Art Match) */}
+      {Object.keys(downloadingIds).length > 0 && (
+        <div className="global-import-progress card">
+          <div className="import-content">
+            <span className="import-text">Importing to Premiere Pro...</span>
+            <span className="import-percent">
+              {Object.values(downloadProgress)[0] || 0}%
+            </span>
+          </div>
+          <div className="import-bar-bg">
+            <div 
+              className="import-bar-fill" 
+              style={{ width: `${Object.values(downloadProgress)[0] || 0}%` }}
+            ></div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
