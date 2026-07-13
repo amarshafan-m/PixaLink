@@ -1050,7 +1050,7 @@ export const App = () => {
       id: `giphy-${hit.id}`,
       title: hit.title || "Giphy GIF",
       preview: hit.images?.fixed_width?.url || hit.images?.downsized?.url || "",
-      meta: "gif · Giphy",
+      meta: "gif",
       url: hit.images?.original?.url || "",
       ext: ".gif",
       provider: "giphy",
@@ -1065,7 +1065,7 @@ export const App = () => {
       id: `coverr-${hit.id}`,
       title: hit.title || "Coverr Video",
       preview: preview,
-      meta: "video · Coverr",
+      meta: "video",
       url: downloadUrl,
       ext: ".mp4",
       provider: "coverr",
@@ -1890,7 +1890,9 @@ export const App = () => {
               </div>
               <div className="asset-info">
                 <h2>{hit.title}</h2>
-                <div className="asset-meta">{hit.meta}</div>
+                <div className="asset-meta">
+                  {hit.provider.charAt(0).toUpperCase() + hit.provider.slice(1)} · {hit.meta}
+                </div>
                 <div className="asset-actions">
                   {/* Per-card track override selectors */}
                   {isAudio ? (
