@@ -453,6 +453,21 @@
         color: #0f172a;
       }
     }
+
+    .pro-btn {
+      padding: 0 8px;
+      background: rgba(60, 174, 163, 0.1);
+      border-color: rgba(60, 174, 163, 0.4);
+      color: #3caea3;
+      font-weight: 700;
+
+      &:hover {
+        background: rgba(60, 174, 163, 0.2);
+        border-color: #3caea3;
+        color: #fff;
+        box-shadow: 0 0 8px rgba(60, 174, 163, 0.3);
+      }
+    }
   }
 
   // Modal Overlay & Dialog Card

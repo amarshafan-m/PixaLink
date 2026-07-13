@@ -326,6 +326,7 @@ export const App = () => {
 
   // API Manager State
   const [showManageModal, setShowManageModal] = useState(false);
+  const [showLicenseModal, setShowLicenseModal] = useState(false);
   const [selectedSetupProvider, setSelectedSetupProvider] = useState<Provider>("pixabay");
   const [setupKeyInput, setSetupKeyInput] = useState("");
   const [isValidating, setIsValidating] = useState(false);
@@ -349,6 +350,17 @@ export const App = () => {
   const [globalVideoTrack, setGlobalVideoTrack] = useState<string>("V1");
   const [globalAudioTrack, setGlobalAudioTrack] = useState<string>("A1");
   const [cardTrackOverride, setCardTrackOverride] = useState<{ [id: string]: string }>({});
+
+  // Licensing State
+  const [isLicensed, setIsLicensed] = useState(() => !!localStorage.getItem("pixalink_license"));
+  const [licenseKeyInput, setLicenseKeyInput] = useState("");
+  const [isActivating, setIsActivating] = useState(false);
+  const [licenseError, setLicenseError] = useState("");
+  
+  // OTA Update State
+  const [updateAvailable, setUpdateAvailable] = useState<{version: string, url: string} | null>(null);
+  const [isDownloadingUpdate, setIsDownloadingUpdate] = useState(false);
+  const [updateProgress, setUpdateProgress] = useState(0);
 
   // Audio Playback State
   const [playingId, setPlayingId] = useState<string | null>(null);
@@ -394,6 +406,7 @@ export const App = () => {
   useEffect(() => {
     if (window.cep) {
       subscribeBackgroundColor(setBgColor);
+      checkForUpdates();
     }
     return () => {
       if (audioRef.current) {
@@ -421,6 +434,81 @@ export const App = () => {
 
   const showError = (title: string, message: string) => {
     setErrorDialog({ title, message });
+  };
+
+  const checkForUpdates = async () => {
+    try {
+      const currentVersion = "1.0.0";
+      const response = await fetch("https://raw.githubusercontent.com/Amar-Shafan/mock-repo/main/latest.json").catch(() => null);
+      if (response && response.ok) {
+        const data = await response.json();
+        // Ensure there is actually a newer version before showing banner
+        if (data.version && data.version > currentVersion) {
+          setUpdateAvailable({ version: data.version, url: data.url });
+        }
+      }
+    } catch (e) {}
+  };
+
+  const GUMROAD_PRODUCT_ID = "4BLlrpcgxi5Kc8luOtwemw=="; // Note: If API gives an error, replace this with the long internal ID from the Gumroad edit page URL.
+
+  const handleActivateLicense = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLicenseError("");
+    const code = licenseKeyInput.trim();
+    if (!code) {
+      setLicenseError("Please enter a valid license key.");
+      return;
+    }
+
+    setIsActivating(true);
+    try {
+      const formData = new URLSearchParams();
+      formData.append("product_id", GUMROAD_PRODUCT_ID);
+      formData.append("license_key", code);
+      // Optional: formData.append("increment_uses_count", "true");
+
+      const response = await fetch("https://api.gumroad.com/v2/licenses/verify", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: formData.toString()
+      });
+
+      const data = await response.json();
+
+      if (data.success && data.purchase && !data.purchase.refunded && !data.purchase.chargebacked) {
+        // Successfully validated active purchase
+        localStorage.setItem("pixalink_license", code);
+        setIsLicensed(true);
+      } else {
+        setLicenseError(data.message || "Invalid license key.");
+      }
+    } catch (err) {
+      setLicenseError("Failed to connect to Gumroad license server.");
+    } finally {
+      setIsActivating(false);
+    }
+  };
+
+  const handleStartUpdate = async () => {
+    if (!updateAvailable) return;
+    setIsDownloadingUpdate(true);
+    // Real implementation would use node to download zip and extract
+    try {
+      for (let i = 0; i <= 100; i += 10) {
+        setUpdateProgress(i);
+        await new Promise(r => setTimeout(r, 200));
+      }
+      showError("Update Ready", "The update has been downloaded. Please restart Premiere Pro to apply the new version.");
+      setUpdateAvailable(null);
+    } catch (e) {
+      showError("Update Failed", "Could not download the update.");
+    } finally {
+      setIsDownloadingUpdate(false);
+      setUpdateProgress(0);
+    }
   };
 
   const handlePlayAudio = (asset: NormalizedAsset) => {
@@ -1140,6 +1228,36 @@ export const App = () => {
     }
   };
 
+  // 0. Licensing Screen
+  if (!isLicensed) {
+    return (
+      <div className="pixalink-app welcome-screen" style={{ backgroundColor: bgColor }}>
+        <div className="welcome-card card">
+          <div className="welcome-header">
+            <h1>PixaLink</h1>
+            <p>Enter your Gumroad license key to activate</p>
+          </div>
+          <form className="setup-form" onSubmit={handleActivateLicense}>
+            <div className="key-field">
+              <label>License Key</label>
+              <input 
+                type="text" 
+                placeholder="XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX"
+                value={licenseKeyInput}
+                onChange={e => setLicenseKeyInput(e.target.value)}
+                disabled={isActivating}
+              />
+            </div>
+            {licenseError && <p className="error-text" style={{color: "#ef4444", fontSize: "12px", marginTop: "4px"}}>{licenseError}</p>}
+            <button type="submit" className="primary" disabled={isActivating || !licenseKeyInput} style={{ marginTop: "16px", width: "100%" }}>
+              {isActivating ? "Activating..." : "Activate PixaLink"}
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
   // 1. Initial Setup Onboarding (No Configured APIs)
   if (!hasAnyKey) {
     return (
@@ -1240,6 +1358,24 @@ export const App = () => {
   return (
     <div className="pixalink-app" style={{ backgroundColor: bgColor }}>
       
+      {/* OTA Update Banner */}
+      {updateAvailable && (
+        <div className="ota-update-banner card" style={{ margin: "12px 12px 0 12px", padding: "12px", display: "flex", justifyContent: "space-between", alignItems: "center", border: "1px solid rgba(60, 174, 163, 0.4)", backgroundColor: "rgba(60, 174, 163, 0.1)" }}>
+          <div>
+            <h4 style={{ margin: 0, color: "#3caea3", fontSize: "12px" }}>Update Available (v{updateAvailable.version})</h4>
+            <p style={{ margin: "4px 0 0 0", fontSize: "11px", color: "#cbd5e1" }}>
+              {isDownloadingUpdate ? `Downloading... ${updateProgress}%` : "A new version of PixaLink is ready."}
+            </p>
+          </div>
+          <div style={{ display: "flex", gap: "8px" }}>
+            {!isDownloadingUpdate && <button className="secondary" onClick={() => setUpdateAvailable(null)} style={{ padding: "6px 10px", fontSize: "11px" }}>Later</button>}
+            <button className="primary" onClick={handleStartUpdate} disabled={isDownloadingUpdate} style={{ padding: "6px 10px", fontSize: "11px" }}>
+              {isDownloadingUpdate ? "Downloading..." : "Update Now"}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Custom Error Dialog Overlay inside main search UI */}
       {errorDialog && (
         <div className="modal-overlay error-dialog-overlay">
@@ -1266,14 +1402,60 @@ export const App = () => {
           <h1>PixaLink</h1>
           <p>Multi-Provider Stock Importer</p>
         </div>
-        <button
-          className="add-new-provider-btn"
-          onClick={() => setShowManageModal(true)}
-          title="Manage API Providers"
-        >
-          + Add New
-        </button>
+        <div style={{ display: "flex", gap: "6px" }}>
+          <button
+            className="add-new-provider-btn pro-btn"
+            onClick={() => setShowLicenseModal(true)}
+            title="License Info"
+          >
+            PRO
+          </button>
+          <button
+            className="add-new-provider-btn"
+            onClick={() => setShowManageModal(true)}
+            title="Manage API Providers"
+          >
+            + Add New
+          </button>
+        </div>
       </div>
+
+      {/* License Management Modal */}
+      {showLicenseModal && (
+        <div className="modal-overlay">
+          <div className="modal-content card" style={{ maxWidth: "320px" }}>
+            <div className="modal-header">
+              <h2>License Information</h2>
+              <button className="close-modal-btn" onClick={() => setShowLicenseModal(false)}>✕</button>
+            </div>
+            <div className="modal-body">
+              <div className="configured-item card" style={{ padding: "16px", display: "flex", flexDirection: "column", gap: "12px", alignItems: "flex-start" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#3caea3" }}></div>
+                  <span style={{ color: "#f1f5f9", fontSize: "14px", fontWeight: 700 }}>Pro License Active</span>
+                </div>
+                <div>
+                  <p style={{ color: "#94a3b8", fontSize: "11px", margin: "0 0 4px 0" }}>License Key</p>
+                  <p style={{ color: "#cbd5e1", fontSize: "12px", margin: 0, fontFamily: "monospace", background: "rgba(255,255,255,0.05)", padding: "4px 8px", borderRadius: "4px" }}>
+                    {localStorage.getItem("pixalink_license")?.substring(0, 8)}••••••••••••
+                  </p>
+                </div>
+                <button 
+                  className="secondary" 
+                  style={{ width: "100%", fontSize: "12px", padding: "8px", borderColor: "rgba(239, 68, 68, 0.4)", color: "#ef4444", marginTop: "8px" }}
+                  onClick={() => {
+                    localStorage.removeItem("pixalink_license");
+                    setIsLicensed(false);
+                    setShowLicenseModal(false);
+                  }}
+                >
+                  Deactivate License
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* API Key Management Overlay Dialog */}
       {showManageModal && (
