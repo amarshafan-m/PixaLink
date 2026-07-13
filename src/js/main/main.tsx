@@ -1411,7 +1411,7 @@ export const App = () => {
       
       {/* OTA Update Banner */}
       {updateAvailable && (
-        <div className="ota-update-banner card" style={{ margin: "12px 12px 0 12px", padding: "12px", display: "flex", justifyContent: "space-between", alignItems: "center", border: "1px solid rgba(60, 174, 163, 0.4)", backgroundColor: "rgba(60, 174, 163, 0.1)" }}>
+        <div className="ota-update-banner card" style={{ margin: "12px", padding: "12px", display: "flex", justifyContent: "space-between", alignItems: "center", border: "1px solid rgba(60, 174, 163, 0.4)", backgroundColor: "rgba(60, 174, 163, 0.1)" }}>
           <div>
             <h4 style={{ margin: 0, color: "#3caea3", fontSize: "12px" }}>Update Available (v{updateAvailable.version})</h4>
             <p style={{ margin: "4px 0 0 0", fontSize: "11px", color: "#cbd5e1" }}>
