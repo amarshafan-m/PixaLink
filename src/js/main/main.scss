@@ -771,25 +771,25 @@
       }
 
       .refresh-tracks-btn {
-        height: 24px;
-        width: 24px;
+        height: 26px;
+        width: 26px;
         padding: 0;
         margin-left: auto;
-        background: transparent;
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        border-radius: 5px;
-        color: #475569;
-        font-size: 11px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 6px;
+        color: #94a3b8;
+        font-size: 13px;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: all 0.15s ease;
+        transition: all 0.2s ease;
 
         &:hover {
           color: #3caea3;
-          border-color: rgba(60, 174, 163, 0.3);
-          background: rgba(60, 174, 163, 0.05);
+          border-color: rgba(60, 174, 163, 0.4);
+          background: rgba(60, 174, 163, 0.1);
         }
       }
     }

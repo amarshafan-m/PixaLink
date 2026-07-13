@@ -84,7 +84,7 @@ const categoryProviders: { [key in Category]: Provider[] } = {
   illustration: ["pixabay"],
   vector: ["pixabay"],
   video: ["pixabay", "pexels", "coverr"],
-  music: ["freesound"],
+  music: [],
   sfx: ["freesound"],
   gif: ["pixabay", "giphy"]
 };
@@ -898,7 +898,7 @@ export const App = () => {
       url: preview,
       ext: ".mp3",
       provider: "freesound",
-      category: type === "music" ? "music" : "sfx"
+      category: "sfx"
     };
   };
 
@@ -1671,15 +1671,7 @@ export const App = () => {
                   >
                     {isDownloading ? "Importing..." : "Import"}
                   </button>
-                  {isAudio && (
-                    <button
-                      className={`play-btn ${isPlaying ? "playing" : ""}`}
-                      onClick={() => handlePlayAudio(hit)}
-                      title={isPlaying ? "Pause preview" : "Play preview"}
-                    >
-                      {isPlaying ? <PauseIcon /> : <PlayIcon />}
-                    </button>
-                  )}
+
                 </div>
               </div>
             </article>
