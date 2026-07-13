@@ -70,9 +70,9 @@ const categories = [
   { id: "illustration", label: "Illustration" },
   { id: "vector", label: "Vector" },
   { id: "video", label: "Video" },
-  { id: "music", label: "Music" },
+  { id: "gif", label: "GIF" },
   { id: "sfx", label: "SFX" },
-  { id: "gif", label: "GIF" }
+  { id: "music", label: "Music" }
 ] as const;
 
 const categoryFolderNames: { [key in Category]: string } = {
