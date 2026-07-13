@@ -1880,6 +1880,13 @@ export const App = () => {
                     <PlayIcon />
                   </div>
                 )}
+
+                {/* Downloading Preloader Overlay */}
+                {isDownloading && (
+                  <div className="downloading-overlay">
+                    <div className="spinner"></div>
+                  </div>
+                )}
               </div>
               <div className="asset-info">
                 <h2>{hit.title}</h2>
