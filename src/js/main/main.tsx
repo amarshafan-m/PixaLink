@@ -1934,7 +1934,7 @@ export const App = () => {
       </div>
 
       {/* Global Import Progress (Concept Art Match) */}
-      {Object.keys(downloadingIds).length > 0 && (
+      {Object.values(downloadingIds).some(Boolean) && (
         <div className="global-import-progress card">
           <div className="import-content">
             <span className="import-text">Importing to Premiere Pro...</span>
