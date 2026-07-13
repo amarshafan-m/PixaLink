@@ -1286,7 +1286,7 @@ export const App = () => {
         <div className="welcome-card card">
           <div className="welcome-header">
             <h1>PixaLink</h1>
-            <p>Enter your Gumroad license key to activate</p>
+            <p>Enter your license key to activate</p>
           </div>
           <form className="setup-form" onSubmit={handleActivateLicense}>
             <div className="key-field">
