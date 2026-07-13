@@ -492,17 +492,10 @@ export const App = () => {
   };
 
   const checkForUpdates = async () => {
-    try {
-      const currentVersion = "1.0.0";
-      const response = await fetch("https://raw.githubusercontent.com/Amar-Shafan/mock-repo/main/latest.json").catch(() => null);
-      if (response && response.ok) {
-        const data = await response.json();
-        // Ensure there is actually a newer version before showing banner
-        if (data.version && data.version > currentVersion) {
-          setUpdateAvailable({ version: data.version, url: data.url });
-        }
-      }
-    } catch (e) {}
+    // Mocked to automatically show you a fake "v1.1.0" update when you open the panel
+    setTimeout(() => {
+      setUpdateAvailable({ version: "1.1.0", url: "https://example.com/update.zxp" });
+    }, 1000);
   };
 
   const GUMROAD_PRODUCT_ID = "4BLlrpcgxi5Kc8luOtwemw=="; // Note: If API gives an error, replace this with the long internal ID from the Gumroad edit page URL.
