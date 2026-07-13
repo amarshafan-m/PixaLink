@@ -491,13 +491,21 @@ export const App = () => {
     setErrorDialog({ title, message });
   };
 
+  const CURRENT_VERSION = "1.0.0";
+  const UPDATE_CHECK_URL = "https://raw.githubusercontent.com/amarshafanm/pixalink-updates/main/version.json";
+
   const checkForUpdates = async () => {
-    // Mocked to automatically show you a fake "v1.1.0" update when you open the panel
-    const currentMockVersion = localStorage.getItem("mock_version") || "1.0.0";
-    if (currentMockVersion !== "1.1.0") {
-      setTimeout(() => {
-        setUpdateAvailable({ version: "1.1.0", url: "https://example.com/update.zxp" });
-      }, 1000);
+    try {
+      const res = await fetch(UPDATE_CHECK_URL);
+      if (!res.ok) return;
+      const data = await res.json();
+      
+      // If remote version is different/higher, prompt update
+      if (data.version && data.version !== CURRENT_VERSION) {
+        setUpdateAvailable({ version: data.version, url: data.downloadUrl });
+      }
+    } catch (e) {
+      console.log("Could not check for updates", e);
     }
   };
 
@@ -546,17 +554,89 @@ export const App = () => {
   const handleStartUpdate = async () => {
     if (!updateAvailable) return;
     setIsDownloadingUpdate(true);
-    // Real implementation would use node to download zip and extract
+    setUpdateProgress(0);
+
     try {
-      for (let i = 0; i <= 100; i += 10) {
-        setUpdateProgress(i);
-        await new Promise(r => setTimeout(r, 200));
+      const AdmZip = typeof window !== "undefined" && typeof window.cep !== "undefined" ? window.require("adm-zip") : null;
+      const fse = typeof window !== "undefined" && typeof window.cep !== "undefined" ? window.require("fs-extra") : null;
+      
+      if (!AdmZip || !fse) {
+         throw new Error("Update system requires a CEP environment.");
       }
-      showError("Update Ready", "The update has been downloaded. Please restart Premiere Pro to apply the new version.");
+
+      const tempZipPath = path.join(os.tmpdir(), `pixalink-update-${updateAvailable.version}.zip`);
+      const extractDir = path.join(os.tmpdir(), `pixalink-update-extracted-${Date.now()}`);
+
+      // 1. Download the zip
+      await new Promise<void>((resolve, reject) => {
+        const file = fs.createWriteStream(tempZipPath);
+        // Helper to follow redirects (common for GitHub releases)
+        const getWithRedirects = (urlStr: string) => {
+          const client = urlStr.startsWith("https") ? https : http;
+          client.get(urlStr, (response: any) => {
+            if (response.statusCode && response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) {
+              getWithRedirects(response.headers.location);
+              return;
+            }
+            if (response.statusCode !== 200) {
+              reject(new Error(`Failed to download update: HTTP ${response.statusCode}`));
+              return;
+            }
+            const totalBytes = parseInt(response.headers["content-length"] || "0", 10);
+            let receivedBytes = 0;
+            
+            response.on("data", (chunk: Buffer) => {
+              receivedBytes += chunk.length;
+              if (totalBytes > 0) {
+                setUpdateProgress(Math.floor((receivedBytes / totalBytes) * 100));
+              } else {
+                setUpdateProgress(50); // Fallback if no content-length
+              }
+            });
+            
+            response.pipe(file);
+            file.on("finish", () => {
+              file.close();
+              resolve();
+            });
+          }).on("error", (err: Error) => {
+            fs.unlink(tempZipPath, () => {});
+            reject(err);
+          });
+        };
+        getWithRedirects(updateAvailable.url);
+      });
+
+      // 2. Extract the Zip
+      setUpdateProgress(100); // Complete bar
+      // Give a tiny delay for the UI to show 100% before blocking main thread
+      await new Promise(r => setTimeout(r, 100)); 
+      
+      const zip = new AdmZip(tempZipPath);
+      zip.extractAllTo(extractDir, true);
+
+      // 3. Overwrite current extension files
+      // getSystemPath("extension") gives the root of the extension folder (where CSXS, dist, etc are)
+      const extDir = window.__adobe_cep__.getSystemPath("extension");
+      
+      // Determine if the zip extracts to a single parent wrapper directory, or directly the extension files
+      const extractedItems = fs.readdirSync(extractDir);
+      let sourceDir = extractDir;
+      if (extractedItems.length === 1 && fs.statSync(path.join(extractDir, extractedItems[0])).isDirectory()) {
+         sourceDir = path.join(extractDir, extractedItems[0]);
+      }
+
+      // Safely copy over all contents using fs-extra
+      fse.copySync(sourceDir, extDir, { overwrite: true });
+
+      // Clean up temporary files
+      fse.removeSync(extractDir);
+      fs.unlinkSync(tempZipPath);
+
+      showError("Update Successful! \u2728", `PixaLink has been successfully updated to v${updateAvailable.version}. Please restart Premiere Pro to apply the new update.`);
       setUpdateAvailable(null);
-      localStorage.setItem("mock_version", "1.1.0");
-    } catch (e) {
-      showError("Update Failed", "Could not download the update.");
+    } catch (e: any) {
+      showError("Update Failed", `Could not install the update. Details: ${e.message}`);
     } finally {
       setIsDownloadingUpdate(false);
       setUpdateProgress(0);
