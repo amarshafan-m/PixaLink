@@ -218,6 +218,31 @@ const ImageIcon = () => (
   </svg>
 );
 
+const VectorIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 19l7-7 3 3-7 7-3-3z"></path>
+    <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path>
+    <path d="M2 2l7.586 7.586"></path>
+    <circle cx="11" cy="11" r="2"></circle>
+  </svg>
+);
+
+const IllustrationIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="13.5" cy="6.5" r="1.5" fill="currentColor"></circle>
+    <circle cx="17.5" cy="10.5" r="1.5" fill="currentColor"></circle>
+    <circle cx="8.5" cy="7.5" r="1.5" fill="currentColor"></circle>
+    <circle cx="6.5" cy="12.5" r="1.5" fill="currentColor"></circle>
+    <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path>
+  </svg>
+);
+
+const GifIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 2l2.4 7.6 7.6 2.4-7.6 2.4-2.4 7.6-2.4-7.6-7.6-2.4 7.6-2.4z"></path>
+  </svg>
+);
+
 const ExternalLinkIcon = () => (
   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: "4px" }}>
     <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
@@ -1713,7 +1738,10 @@ export const App = () => {
               >
                 {category.id === "video" ? <VideoIcon /> : 
                  category.id === "music" || category.id === "sfx" ? <MusicIcon /> : 
-                 category.id === "photo" || category.id === "illustration" || category.id === "vector" || category.id === "gif" ? <ImageIcon /> : null}
+                 category.id === "vector" ? <VectorIcon /> :
+                 category.id === "illustration" ? <IllustrationIcon /> :
+                 category.id === "gif" ? <GifIcon /> :
+                 category.id === "photo" ? <ImageIcon /> : null}
                 <span>{category.label}</span>
               </button>
             );
@@ -1827,7 +1855,12 @@ export const App = () => {
 
                 {/* Type Icon Overlay — bottom left */}
                 <div className="asset-type-icon-overlay">
-                  {isVideo ? <VideoIcon /> : isAudio ? <MusicIcon /> : <ImageIcon />}
+                  {isVideo ? <VideoIcon /> : 
+                   isAudio ? <MusicIcon /> : 
+                   hit.category === "vector" ? <VectorIcon /> : 
+                   hit.category === "illustration" ? <IllustrationIcon /> : 
+                   hit.category === "gif" ? <GifIcon /> : 
+                   <ImageIcon />}
                 </div>
 
                 {/* Duration Overlay — bottom right */}
