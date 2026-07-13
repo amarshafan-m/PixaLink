@@ -492,7 +492,7 @@ export const App = () => {
   };
 
   const CURRENT_VERSION = "1.0.0";
-  const UPDATE_CHECK_URL = "https://raw.githubusercontent.com/amarshafanm/pixalink-updates/main/version.json";
+  const UPDATE_CHECK_URL = "https://raw.githubusercontent.com/amarshafan-m/PixaLink/main/version.json";
 
   const checkForUpdates = async () => {
     try {
