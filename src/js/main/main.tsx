@@ -969,7 +969,7 @@ export const App = () => {
         ext: ".mp4",
         provider: "pixabay",
         category: assetCategory,
-        duration: hit.duration ? formatDurationSeconds(hit.duration) : undefined
+        duration: formatDurationSeconds(hit.duration || 15)
       };
     }
 
@@ -1026,7 +1026,7 @@ export const App = () => {
       ext: ".mp4",
       provider: "pexels",
       category: "video",
-      duration: hit.duration ? formatDurationSeconds(hit.duration) : undefined
+      duration: formatDurationSeconds(hit.duration || 15)
     };
   };
 
@@ -1069,7 +1069,8 @@ export const App = () => {
       url: downloadUrl,
       ext: ".mp4",
       provider: "coverr",
-      category: "video"
+      category: "video",
+      duration: "00:15" // Fallback since Coverr API doesn't reliably provide duration
     };
   };
 
