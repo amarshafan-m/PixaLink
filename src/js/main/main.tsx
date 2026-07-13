@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { os, path, fs, https, http } from "../lib/cep/node";
 import { csi, evalTS, subscribeBackgroundColor } from "../lib/utils/bolt";
 import "./main.scss";
+import pixaLogo from "../../assets/PixaLink.png";
 
 // Normalize path from file protocol
 const normalizeCepPath = (value: string): string => {
@@ -1455,9 +1456,12 @@ export const App = () => {
       )}
 
       <div className="topbar">
-        <div>
-          <h1>PixaLink</h1>
-          <p>Multi-Provider Stock Importer</p>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <img src={pixaLogo} alt="PixaLink Logo" style={{ width: "24px", height: "24px", borderRadius: "6px" }} />
+          <div>
+            <h1>PixaLink</h1>
+            <p>Multi-Provider Stock Importer</p>
+          </div>
         </div>
         <div style={{ display: "flex", gap: "6px" }}>
           <button
@@ -1614,6 +1618,9 @@ export const App = () => {
                   <a href="https://developers.giphy.com/docs/api/" onClick={(e) => { e.preventDefault(); csi.openURLInDefaultBrowser("https://developers.giphy.com/docs/api/"); }}>GIPHY API</a>
                   <a href="https://freesound.org/docs/api/" onClick={(e) => { e.preventDefault(); csi.openURLInDefaultBrowser("https://freesound.org/docs/api/"); }}>Freesound API</a>
                 </div>
+              </div>
+              <div style={{ marginTop: "16px", textAlign: "center", borderTop: "1px solid rgba(255, 255, 255, 0.05)", paddingTop: "12px" }}>
+                <p style={{ color: "#475569", fontSize: "10px", margin: 0, fontWeight: 500, letterSpacing: "0.02em" }}>Developed by Amarshafan M</p>
               </div>
             </div>
 
