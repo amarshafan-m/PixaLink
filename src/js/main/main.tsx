@@ -617,7 +617,14 @@ export const App = () => {
 
       // 3. Overwrite current extension files
       // getSystemPath("extension") gives the root of the extension folder (where CSXS, dist, etc are)
-      const extDir = window.__adobe_cep__.getSystemPath("extension");
+      let extDir = window.__adobe_cep__.getSystemPath("extension");
+      if (extDir.startsWith("file://")) {
+        extDir = decodeURIComponent(extDir.replace(/^file:\/\//i, ""));
+        // Remove leading slash on Windows (e.g., /C:/Users/...)
+        if (extDir.match(/^\/[a-zA-Z]:\//)) {
+          extDir = extDir.substring(1);
+        }
+      }
       
       // Determine if the zip extracts to a single parent wrapper directory, or directly the extension files
       const extractedItems = fs.readdirSync(extractDir);
