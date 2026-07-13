@@ -419,6 +419,8 @@
     align-items: center;
     margin-bottom: 8px;
     padding: 0 4px;
+    flex-wrap: wrap;
+    gap: 8px;
 
     h1 {
       margin: 0;
@@ -748,6 +750,7 @@
         background: #3caea3;
         border-color: #3caea3;
         color: #0c1015;
+        flex-shrink: 0;
 
         &:hover {
           background: #4ec4b7;
@@ -760,6 +763,7 @@
     .track-target-row {
       display: flex;
       align-items: center;
+      flex-wrap: wrap;
       gap: 8px;
       padding-top: 6px;
       border-top: 1px solid rgba(255, 255, 255, 0.04);
